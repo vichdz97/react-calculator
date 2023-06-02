@@ -7,6 +7,10 @@ html, body, #root, #root>div {
     min-width: auto;
 }
 
+.operator {
+    height: 84px;
+}
+
 @media screen and (min-width: 560px) {
     .calculator {
         width: 60%;
@@ -17,10 +21,18 @@ html, body, #root, #root>div {
     .calculator {
         width: 50%;
     }
+
+    .operator {
+        height: auto;
+    }
 }
 
 @media screen and (min-width: 960px) {
     .calculator {
         width: 40%;
+    }
+
+    .operator {
+        height: auto;
     }
 }
