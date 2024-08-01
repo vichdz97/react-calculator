@@ -1,3 +1,4 @@
+import { format } from "mathjs";
 import { useState } from "react";
 import Display from "./components/Display";
 import NumberGrid from "./components/NumberGrid";
@@ -11,11 +12,20 @@ function App() {
   	const [currentValue, setCurrentValue] = useState("");
   	const [calcString, setCalcString] = useState("");
 
-	const ops = ["+", "-", "*", "/", "."];
+	const ops = ["+", "-", "*", "/"];
 	const LAST_VALUE = calcString.slice(-1);
+
+	const calculator = document.querySelector('.calculator');
+	const width = document.body.offsetWidth - (calculator?.clientWidth || 0);
+	calculator?.setAttribute('style', `width: ${width}px`);
 
 	const displayCalc = (value: string) => {
 		if (ops.includes(value) && (calcString === "" || ops.includes(LAST_VALUE))) return;
+
+		if (value.includes(".") && (calcString === "" || ops.includes(LAST_VALUE))) {
+			setCalcString(calcString + "0.");
+			return;
+		}
 		
 		if (!ops.includes(value)) {
 			setCurrentValue(eval(calcString + value).toString());
@@ -26,7 +36,7 @@ function App() {
 
 	const calcResult = () => {
 		if (calcString === "" || ops.includes(LAST_VALUE)) return;
-		setCalcString(eval(calcString).toString());
+		setCalcString(format(eval(calcString)));
 		setCurrentValue("");
 	}
 

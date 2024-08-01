@@ -3,8 +3,8 @@ html, body, #root, #root>div {
     margin: 0;
 }
 
-.calculator {
-    min-width: auto;
+.display {
+    overflow: hidden;
 }
 
 .operator {
