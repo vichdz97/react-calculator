@@ -1,4 +1,4 @@
-import { format } from "mathjs";
+import { round, format } from "mathjs";
 import { useState } from "react";
 import Display from "./components/Display";
 import NumberGrid from "./components/NumberGrid";
@@ -11,38 +11,49 @@ import MiscRow from "./components/MiscRow";
 function App() {
   	const [currentValue, setCurrentValue] = useState("");
   	const [calcString, setCalcString] = useState("");
+	const [justCalculated, setJustCalculated] = useState(false);
 
 	const ops = ["+", "-", "*", "/"];
 	const LAST_VALUE = calcString.slice(-1);
 
-	const calculator = document.querySelector('.calculator');
-	const width = document.body.offsetWidth - (calculator?.clientWidth || 0);
-	calculator?.setAttribute('style', `width: ${width}px`);
-
 	const displayCalc = (value: string) => {
 		if (ops.includes(value) && (calcString === "" || ops.includes(LAST_VALUE))) return;
 
+		if (justCalculated && calcString !== "" && !ops.includes(value)) {
+			setCalcString(value);
+			setCurrentValue(value);
+			setJustCalculated(false);
+			return;
+		}
+
 		if (value.includes(".") && (calcString === "" || ops.includes(LAST_VALUE))) {
 			setCalcString(calcString + "0.");
+			setJustCalculated(false);
 			return;
 		}
 		
 		if (!ops.includes(value)) {
-			setCurrentValue(eval(calcString + value).toString());
+			setCurrentValue(round(eval(calcString + value), 6));
 		}
 
 		setCalcString(calcString + value);
+
+		setJustCalculated(false);
 	}
 
 	const calcResult = () => {
 		if (calcString === "" || ops.includes(LAST_VALUE)) return;
-		setCalcString(format(eval(calcString)));
-		setCurrentValue("");
+		if (!justCalculated) {
+			setCalcString(format(currentValue));
+			setCurrentValue("");
+			setJustCalculated(true);
+		}
 	}
 
 	const allClear = () => {
 		setCurrentValue("");
 		setCalcString("");
+		setJustCalculated(false);
 	}
 
 	const deleteLastValue = () => {
@@ -54,11 +65,13 @@ function App() {
 
 		setCalcString(value);
 
-		if (ops.includes(value.slice(-1)) && value) {
+		if (value && ops.includes(value.slice(-1))) {
 			value = value.slice(0, -1);
 		}
 
-		setCurrentValue(eval(value).toString());
+		setCurrentValue(round(eval(value), 6));
+
+		setJustCalculated(false);
 	}
 
 	const changeSign = () => {
@@ -67,6 +80,7 @@ function App() {
 			let num = -eval(calcString);
 			setCalcString(num.toString());
 			setCurrentValue("");
+			setJustCalculated(false);
 		}
 	}
 
@@ -76,6 +90,7 @@ function App() {
 			let percentage = eval(calcString) / 100;
 			setCalcString(percentage.toString());
 			setCurrentValue(""); 
+			setJustCalculated(false);
 		}
 	}
 
