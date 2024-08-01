@@ -1,7 +1,10 @@
 # React Calculator App
 
+> [!NOTE]
+> Last updated July 31, 2024.
+
 ## Summary
-This is a simple calculator application built using React that performs various mathematical operations.
+A simple calculator application built using React that performs various mathematical operations.
 
 ## Live Demo
 Access the live demo [here](https://calculator-app.victor-jr.com).
