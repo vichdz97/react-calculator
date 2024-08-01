@@ -3,6 +3,10 @@ html, body, #root, #root>div {
     margin: 0;
 }
 
+.calculator {
+    width: 90%;
+}
+
 .display {
     overflow: hidden;
 }
