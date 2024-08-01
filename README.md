@@ -13,4 +13,4 @@ Access the live demo [here](https://calculator-app.victor-jr.com).
 - [math.js](https://mathjs.org) (*v13.0.3*)
 
 ## Screenshots
-![Screenshot](https://github.com/vichdz97/Website/blob/master/src/assets/images/calculator.png)
+<img width="1255" alt="calculator" src="https://github.com/user-attachments/assets/e4952684-165f-4a0d-950d-69a2e082d8a5">
