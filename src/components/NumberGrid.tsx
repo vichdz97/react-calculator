@@ -6,7 +6,7 @@ interface Props {
 
 function NumberGrid({ logNumber }: Props) {
     return (
-		<div className="container numbers">
+		<div id="numbers" className="container">
 				<div className="row row-cols-3">
 					<div className="col"><Number onClick={logNumber}>7</Number></div>
 					<div className="col"><Number onClick={logNumber}>8</Number></div>

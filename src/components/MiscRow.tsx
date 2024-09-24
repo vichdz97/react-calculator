@@ -7,7 +7,7 @@ interface Props {
 
 function MiscRow({ clearLog, clearValue, logSign, logPercent }: Props) {
     return (
-        <div className="container">
+        <div id="misc" className="container">
             <div className="row">
                 <div className="col-6 col-md-3"><button className="btn btn-info w-100 m-1" onClick={clearLog}>AC</button></div>
                 <div className="col-6 col-md-3"><button className="btn btn-info w-100 m-1" onClick={clearValue}>DEL</button></div>
