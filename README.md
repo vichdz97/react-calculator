@@ -1,7 +1,7 @@
 # React Calculator App
 
 > [!NOTE]
-> Last updated August 01, 2024.
+> Last updated September 24, 2024.
 
 ## Summary
 A simple calculator application built using React that performs various mathematical operations.
