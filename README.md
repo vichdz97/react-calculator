@@ -17,6 +17,7 @@ The second version of the app is still in development, but you can access the li
 
 ## Screenshots
 ### Version 1.0 (Released)
-<img width="300" alt="calculator" src="https://github.com/user-attachments/assets/e4952684-165f-4a0d-950d-69a2e082d8a5">
+<img width="300" alt="react calculator v1" src="https://github.com/user-attachments/assets/e4952684-165f-4a0d-950d-69a2e082d8a5">
 
 ### Version 2.0 (In-Development)
+<img width="300" alt="react calculator v2" src="https://github.com/user-attachments/assets/0f71d725-6717-4235-a6c6-b43099110b3e" />
