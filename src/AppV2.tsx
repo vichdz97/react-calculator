@@ -1,19 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function AppV2() {
     const [showPanel, setShowPanel] = useState(true);
-    const [result, setResult] = useState('0');
+    const [result, setResult] = useState('');
 
     const valuesArray: string[] = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'];
     const operationsArray: string[] = ['÷', '×', '-', '+', '='];
     const miscArray: string[] = ['AC', '+/-', '%'];
 
-    const changeResult = (newResult: string) => {
-        if (newResult === '') setResult('0');
-        else {
-            let removedLeadingZeros = newResult.charAt(0) === '0' ? newResult.slice(1) : newResult;
-            setResult(removedLeadingZeros);
-        }
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => changeResult(e.key);
+        window.addEventListener('keydown', handleKeyDown);
+        
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
+
+    const changeResult = (input: string) => {
+        if (!valuesArray.includes(input)) return;
+
+        if (result.includes('.') && input === '.') return;
+
+        setResult(prev => prev + input);
     }
 
     return (
@@ -45,12 +54,9 @@ function AppV2() {
                 <div className="h-full flex flex-col gap-4 items-center justify-center">
                     <h1 className="text-4xl font-bold">React Calculator</h1>
                     <div className="w-100 bg-slate-500 w-3/4 h-3/4 flex flex-col gap-4 rounded-xl p-4">
-                        <input
-                            type="text" 
-                            value={result} 
-                            onChange={(e) => changeResult(e.target.value)}
-                            className="w-full h-20 p-4 text-right text-4xl bg-slate-800 rounded focus:outline-none"
-                        />
+                        <div className="relative h-20 p-4 text-4xl bg-slate-800 rounded overflow-hidden">
+                            <span className="absolute right-0 mx-4">{result || 0}</span>
+                        </div>
 
                         {/* Button Grid Container */}
                         <div className="h-full grid gap-1 grid-rows-5 grid-cols-4">
@@ -69,8 +75,11 @@ function AppV2() {
                                 {
                                     valuesArray.map((val, index) => {
                                         return (
-                                            <div key={index} className={`bg-slate-500 rounded-full flex items-center justify-center transition-all hover:bg-slate-400 hover:scale-[1.1] ${val === '0' && 'col-span-2'}`}>
-                                                <button className="text-2xl">{val}</button>
+                                            <div 
+                                                key={index} 
+                                                onClick={() => changeResult(val)}
+                                                className={`bg-slate-500 rounded-full flex items-center justify-center transition-all hover:bg-slate-400 hover:scale-[1.1] ${val === '0' && 'col-span-2'}`}>
+                                                <button className="value-btn text-2xl">{val}</button>
                                             </div>
                                         );
                                     })
