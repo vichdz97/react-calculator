@@ -25,6 +25,20 @@ function AppV2() {
         setResult(prev => prev + input);
     }
 
+    const applyMisc = (input: string) => {
+        if (result.endsWith('%') && input === '%') {
+            setResult(result.slice(0, -1));
+            return;
+        }
+        
+        switch (input) {
+            case 'AC': setResult(''); break;
+            case '+/-': setResult((-parseFloat(result)).toString()); break;
+            case '%': setResult(result + '%'); break;
+            default: return;
+        }
+    }
+
     return (
         <div className="min-h-screen flex bg-slate-950">
             {/* Hides/Shows side panel displaying calculation history */}
@@ -64,7 +78,10 @@ function AppV2() {
                                 {
                                     miscArray.map((misc, index) => {
                                         return (
-                                            <div key={index} className={`bg-slate-400 rounded-full flex items-center justify-center transition-colors hover:bg-slate-300`}>
+                                            <div 
+                                                key={index} 
+                                                onClick={() => applyMisc(misc)}
+                                                className={`bg-slate-400 rounded-full flex items-center justify-center transition-colors hover:bg-slate-300`}>
                                                 <button className="text-2xl">{misc}</button>
                                             </div>
                                         );
