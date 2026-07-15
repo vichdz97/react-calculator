@@ -7,6 +7,7 @@ function AppV2() {
     const valuesArray: string[] = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'];
     const operationsArray: string[] = ['÷', '×', '-', '+', '='];
     const miscArray: string[] = ['AC', '+/-', '%'];
+    const miscKeys: string[] = ['c', 'C', '-', 'Backspace'];
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => changeResult(e.key);
@@ -15,27 +16,37 @@ function AppV2() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
+    }, [result]);
 
-    const changeResult = (input: string) => {
-        if (!valuesArray.includes(input)) return;
+    const deleteLastChar = (): void => setResult(prev => prev.slice(0, -1));
 
-        if (result.includes('.') && input === '.') return;
+    const changeResult = (input: string): void => {
+        if (!valuesArray.includes(input) && !miscArray.includes(input) && !miscKeys.includes(input)) return;
 
-        setResult(prev => prev + input);
-    }
+        if (result.includes('.') && input === '.') return; // only one decimal point
 
-    const applyMisc = (input: string) => {
         if (result.endsWith('%') && input === '%') {
-            setResult(result.slice(0, -1));
+            deleteLastChar();
             return;
         }
-        
+
+        applyMisc(input);
+    }
+
+    const applyMisc = (input: string): void => {
         switch (input) {
-            case 'AC': setResult(''); break;
-            case '+/-': setResult((-parseFloat(result)).toString()); break;
-            case '%': setResult(result + '%'); break;
-            default: return;
+            case 'AC':
+            case 'C':
+            case 'c': 
+                setResult(''); 
+                break;
+            case '+/-': 
+            case '-': 
+                result.endsWith('%') ? setResult(prev => `${-parseFloat(prev)}%`) : setResult(prev => `${-parseFloat(prev)}`); 
+                break;
+            case '%': setResult(prev => prev + '%'); break;
+            case 'Backspace': deleteLastChar(); break;
+            default: setResult(prev => prev + input);;
         }
     }
 
@@ -80,7 +91,7 @@ function AppV2() {
                                         return (
                                             <div 
                                                 key={index} 
-                                                onClick={() => applyMisc(misc)}
+                                                onClick={() => changeResult(misc)}
                                                 className={`bg-slate-400 rounded-full flex items-center justify-center transition-colors hover:bg-slate-300`}>
                                                 <button className="text-2xl">{misc}</button>
                                             </div>
