@@ -26,11 +26,33 @@ function AppV2() {
         if (input === '×') return '*';
         return input;
     }
+    const convertPercentages = (): string => {
+        const numbers = result.split(/[+\-\*\/]/g);
+        const ops = result.split(/[^+\-\*\/]/g).filter(x => x != '');
+        let concatArray = [];
+        for (let i = 0; i < numbers.length; i++) {
+            concatArray.push(numbers[i]);
+            concatArray.push(ops[i]);
+        }
+        const filteredConcatArray = concatArray.filter(x => x != undefined);
+        const convertedPercents = filteredConcatArray.map(el => {
+            if (el.includes('%')) {
+                let num = el.slice(0, -1);
+                let decimal = parseFloat(num) / 100;
+                return decimal;
+            }
+            return el;
+        });
+        return convertedPercents.join('');
+    }
 
     const updateResult = (input: string): void => {
         if (!valuesArray.includes(input) && !operationsArray.includes(input) && !miscArray.includes(input) && !miscKeys.includes(input)) return;
-        if (valuesArray.includes(LAST_ENTRY) && LAST_ENTRY !== '0' && input === '.') return; // only one decimal point but multiple floats allowed
-        if (result.endsWith('%') && input === '%') {
+
+        const currentNum = result.split(/[+\-\*\/]/g).pop() ?? '';
+        if (input === '.' && currentNum.includes('.')) return; // only one decimal point per current number
+
+        if (input === '%' && result.endsWith('%')) {
             deleteLastChar(); // remove percentage if already present
             return;
         }
@@ -57,7 +79,8 @@ function AppV2() {
             case 'Backspace': deleteLastChar(); break;
             case '=':
             case 'Enter':
-                setResult(eval(result).toString()); 
+                const convertedResult = convertPercentages();
+                setResult(eval(convertedResult).toString()); 
                 break;
             default: setResult(prev => prev + input);
         }
