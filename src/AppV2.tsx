@@ -7,10 +7,12 @@ function AppV2() {
     const valuesArray: string[] = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'];
     const operationsArray: string[] = ['÷', '×', '-', '+', '='];
     const miscArray: string[] = ['AC', '+/-', '%'];
-    const miscKeys: string[] = ['c', 'C', '-', 'Backspace'];
+    const miscKeys: string[] = ['c', 'C', 'Backspace', '/', '*', 'Enter'];
+    const operators: string[] = ['/', '*', '-', '+'];
+    const LAST_ENTRY: string = result.slice(-1);
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => changeResult(e.key);
+        const handleKeyDown = (e: KeyboardEvent) => updateResult(e.key);
         window.addEventListener('keydown', handleKeyDown);
         
         return () => {
@@ -19,37 +21,48 @@ function AppV2() {
     }, [result]);
 
     const deleteLastChar = (): void => setResult(prev => prev.slice(0, -1));
+    const convertOperator = (input: string): string => {
+        if (input === '÷') return '/';
+        if (input === '×') return '*';
+        return input;
+    }
 
-    const changeResult = (input: string): void => {
-        if (!valuesArray.includes(input) && !miscArray.includes(input) && !miscKeys.includes(input)) return;
-
-        if (result.includes('.') && input === '.') return; // only one decimal point
-
+    const updateResult = (input: string): void => {
+        if (!valuesArray.includes(input) && !operationsArray.includes(input) && !miscArray.includes(input) && !miscKeys.includes(input)) return;
+        if (valuesArray.includes(LAST_ENTRY) && LAST_ENTRY !== '0' && input === '.') return; // only one decimal point but multiple floats allowed
         if (result.endsWith('%') && input === '%') {
-            deleteLastChar();
+            deleteLastChar(); // remove percentage if already present
             return;
         }
 
-        applyMisc(input);
+        const newInput = convertOperator(input);
+        if (result.endsWith(newInput) && operators.includes(newInput)) return; // no dupe operators
+        if (operators.includes(LAST_ENTRY) && operators.includes(newInput) && LAST_ENTRY !== newInput) // replace operators
+            deleteLastChar();
+
+        applyInput(newInput);
     }
 
-    const applyMisc = (input: string): void => {
+    const applyInput = (input: string): void => {
         switch (input) {
             case 'AC':
             case 'C':
             case 'c': 
                 setResult(''); 
                 break;
-            case '+/-': 
-            case '-': 
+            case '+/-':  
                 result.endsWith('%') ? setResult(prev => `${-parseFloat(prev)}%`) : setResult(prev => `${-parseFloat(prev)}`); 
                 break;
             case '%': setResult(prev => prev + '%'); break;
             case 'Backspace': deleteLastChar(); break;
-            default: setResult(prev => prev + input);;
+            case '=':
+            case 'Enter':
+                setResult(eval(result).toString()); 
+                break;
+            default: setResult(prev => prev + input);
         }
     }
-
+    
     return (
         <div className="min-h-screen flex bg-slate-950">
             {/* Hides/Shows side panel displaying calculation history */}
@@ -91,7 +104,7 @@ function AppV2() {
                                         return (
                                             <div 
                                                 key={index} 
-                                                onClick={() => changeResult(misc)}
+                                                onClick={() => updateResult(misc)}
                                                 className={`bg-slate-400 rounded-full flex items-center justify-center transition-colors hover:bg-slate-300`}>
                                                 <button className="text-2xl">{misc}</button>
                                             </div>
@@ -105,7 +118,7 @@ function AppV2() {
                                         return (
                                             <div 
                                                 key={index} 
-                                                onClick={() => changeResult(val)}
+                                                onClick={() => updateResult(val)}
                                                 className={`bg-slate-500 rounded-full flex items-center justify-center transition-all hover:bg-slate-400 hover:scale-[1.1] ${val === '0' && 'col-span-2'}`}>
                                                 <button className="value-btn text-2xl">{val}</button>
                                             </div>
@@ -117,7 +130,10 @@ function AppV2() {
                                 {
                                     operationsArray.map((op, index) => {
                                         return (
-                                            <div key={index} className="bg-blue-400 rounded-full flex items-center justify-center transition-colors hover:bg-blue-300">
+                                            <div 
+                                                key={index}
+                                                onClick={() => updateResult(op)}
+                                                className="bg-blue-400 rounded-full flex items-center justify-center transition-colors hover:bg-blue-300">
                                                 <button className="text-3xl">{op}</button>
                                             </div>
                                         );
