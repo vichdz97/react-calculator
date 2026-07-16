@@ -116,7 +116,7 @@ function AppV2() {
                     <h1 className="text-4xl font-bold">React Calculator</h1>
                     <div className="w-100 bg-slate-500 w-3/4 h-3/4 flex flex-col gap-4 rounded-xl p-4">
                         <div className="relative h-20 p-4 text-4xl bg-slate-800 rounded overflow-hidden">
-                            <span className="absolute right-0 mx-4">{result || 0}</span>
+                            <span id="result" className="absolute right-0 mx-4">{result || 0}</span>
                         </div>
 
                         {/* Button Grid Container */}
