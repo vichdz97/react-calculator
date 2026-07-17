@@ -21,29 +21,54 @@ function AppV2() {
     }, [result]);
 
     const deleteLastChar = (): void => setResult(prev => prev.slice(0, -1));
+
     const convertOperator = (input: string): string => {
         if (input === '÷') return '/';
         if (input === '×') return '*';
         return input;
     }
+
     const convertPercentages = (): string => {
         const numbers = result.split(/[+\-\*\/]/g);
         const ops = result.split(/[^+\-\*\/]/g).filter(x => x != '');
-        let concatArray = [];
-        for (let i = 0; i < numbers.length; i++) {
-            concatArray.push(numbers[i]);
-            concatArray.push(ops[i]);
-        }
-        const filteredConcatArray = concatArray.filter(x => x != undefined);
-        const convertedPercents = filteredConcatArray.map(el => {
-            if (el.includes('%')) {
-                let num = el.slice(0, -1);
+
+        const convertedPercents = numbers.map(el => {
+            let num = '';
+            if (el.endsWith('%)')) {
+                num = el.slice(0, -2);
+                let decimal = parseFloat(num) / 100;
+                return decimal + ')';
+            }
+            else if (el.endsWith('%')) {
+                num = el.slice(0, -1);
                 let decimal = parseFloat(num) / 100;
                 return decimal;
             }
             return el;
         });
-        return convertedPercents.join('');
+
+        let concatArray = [];
+        for (let i = 0; i < convertedPercents.length; i++) {
+            concatArray.push(convertedPercents[i]);
+            concatArray.push(ops[i]);
+        }
+        
+        const filteredConcatArray = concatArray.filter(x => x != undefined);
+        return filteredConcatArray.join('');
+    }
+
+    const negateLastElement = () => {
+        const nums = result.split(/[+\-\*\/]/g);
+        const lastEl = nums.pop() ?? '';
+        if (lastEl.includes(')')) {
+            const removedP = lastEl.slice(0, -1); // remove ')'
+            const negativeNum = '-' + removedP;
+            const positiveNum = result.endsWith('%)') ? `${-parseFloat(negativeNum)}%` : -parseFloat(negativeNum);
+            setResult(prev => prev.slice(0, -lastEl.length - 2) + positiveNum);
+            return;
+        }
+        const negatedEl = result.endsWith('%') ? `${-parseFloat(lastEl)}%` : -parseFloat(lastEl);
+        setResult(prev => prev.slice(0, -lastEl.length) + `(${negatedEl})`)
     }
 
     const updateResult = (input: string): void => {
@@ -55,6 +80,11 @@ function AppV2() {
         if (input === '%' && result.endsWith('%')) {
             deleteLastChar(); // remove percentage if already present
             return;
+        }
+
+        if (input === '+/-') {
+            if (result === '' || result.endsWith('+') || result.endsWith('-') || result.endsWith('*') || result.endsWith('/')) return;
+            negateLastElement();
         }
 
         const newInput = convertOperator(input);
@@ -69,12 +99,8 @@ function AppV2() {
         switch (input) {
             case 'AC':
             case 'C':
-            case 'c': 
-                setResult(''); 
-                break;
-            case '+/-':  
-                result.endsWith('%') ? setResult(prev => `${-parseFloat(prev)}%`) : setResult(prev => `${-parseFloat(prev)}`); 
-                break;
+            case 'c': setResult(''); break;
+            case '+/-': break;
             case '%': setResult(prev => prev + '%'); break;
             case 'Backspace': deleteLastChar(); break;
             case '=':
