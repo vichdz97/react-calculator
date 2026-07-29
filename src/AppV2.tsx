@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
+import { Circle, CircleCheck, CircleX, Clock9 } from "lucide-react";
+
+interface Entry {
+    eq: string;
+    ans: string;
+    selected: boolean;
+}
 
 function AppV2() {
-    const [showPanel, setShowPanel] = useState(true);
-    const [result, setResult] = useState('');
+    const [showPanel, setShowPanel] = useState<boolean>(false);
+    const [editing, setEditing] = useState<boolean>(false);
+    const [result, setResult] = useState<string>('');
+    const [history, setHistory] = useState<Entry[]>([]);
+    const [count, setCount] = useState<number>(0);
 
     const valuesArray: string[] = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'];
     const operationsArray: string[] = ['÷', '×', '-', '+', '='];
     const miscArray: string[] = ['AC', '+/-', '%'];
-    const miscKeys: string[] = ['c', 'C', 'Backspace', '/', '*', 'Enter'];
+    const miscKeys: string[] = ['c', 'C', 'h', 'H', 'Backspace', '/', '*', 'Enter'];
     const operators: string[] = ['/', '*', '-', '+'];
     const LAST_ENTRY: string = result.slice(-1);
 
@@ -20,13 +30,18 @@ function AppV2() {
         };
     }, [result]);
 
+    useEffect(() => {
+        const selectedEntries = history.filter(entry => entry.selected);
+        setCount(selectedEntries.length);
+    }, [history]);
+
     const deleteLastChar = (): void => setResult(prev => prev.slice(0, -1));
 
     const convertOperator = (input: string): string => {
         if (input === '÷') return '/';
         if (input === '×') return '*';
         return input;
-    }
+    };
 
     const convertPercentages = (): string => {
         const numbers = result.split(/[+\-\*\/]/g);
@@ -55,7 +70,7 @@ function AppV2() {
         
         const filteredConcatArray = concatArray.filter(x => x != undefined);
         return filteredConcatArray.join('');
-    }
+    };
 
     const negateLastElement = () => {
         const nums = result.split(/[+\-\*\/]/g);
@@ -69,7 +84,7 @@ function AppV2() {
         }
         const negatedEl = result.endsWith('%') ? `${-parseFloat(lastEl)}%` : -parseFloat(lastEl);
         setResult(prev => prev.slice(0, -lastEl.length) + `(${negatedEl})`)
-    }
+    };
 
     const updateResult = (input: string): void => {
         if (!valuesArray.includes(input) && !operationsArray.includes(input) && !miscArray.includes(input) && !miscKeys.includes(input)) return;
@@ -93,46 +108,119 @@ function AppV2() {
             deleteLastChar();
 
         applyInput(newInput);
-    }
+    };
 
     const applyInput = (input: string): void => {
         switch (input) {
             case 'AC':
             case 'C':
             case 'c': setResult(''); break;
+            case 'H':
+            case 'h': 
+                setShowPanel(prev => !prev); 
+                setEditing(false);
+                break;
             case '+/-': break;
             case '%': setResult(prev => prev + '%'); break;
             case 'Backspace': deleteLastChar(); break;
             case '=':
             case 'Enter':
                 const convertedResult = convertPercentages();
-                setResult(eval(convertedResult).toString()); 
+                const finalAnswer = eval(convertedResult).toString();
+                setResult(finalAnswer);
+                setHistory(prev => [{ eq: result, ans: finalAnswer, selected: false }, ...prev]); // add to beginning of array
                 break;
             default: setResult(prev => prev + input);
         }
-    }
+    };
+
+    const selectEntries = (entry: Entry) => {
+        setHistory(history.map(e => {
+            return entry === e ? {...e, selected: !e.selected} : e;
+        }));
+    };
+
+    const deleteEntries = () => {
+        if (count === 0) {
+            setHistory([]);
+            setEditing(false);
+        } else {
+            setHistory(history.filter(entry => !entry.selected));
+        }
+    };
     
     return (
         <div className="min-h-screen flex bg-slate-950">
-            {/* Hides/Shows side panel displaying calculation history */}
-            <button 
-                className={`m-2 w-10 h-10 rounded-lg text-slate-100 absolute top-0 left-0 transition-colors hover:bg-slate-100/10 ${showPanel ? 'hidden' : 'block'}`}
+            {/* Hide/Show side panel displaying calculation history */}
+            <Clock9 
+                size={32}
+                className={`
+                    m-2 p-2 rounded-lg text-slate-100 
+                    absolute top-0 left-0 
+                    transition-colors hover:bg-slate-100/10 
+                    ${showPanel ? "hidden" : "block"}
+                `}
                 onClick={() => setShowPanel(!showPanel)}
-            >
-                →
-            </button>
+            />
 
             {/* Side Panel */}
-            <div className={`bg-slate-900 w-1/3 text-slate-100 relative p-4 ${showPanel ? 'block' : 'hidden'}`}>
-                Calculation History
-                <div className="absolute top-0 right-0">
+            <div className={`
+                bg-slate-900 w-1/3 text-slate-100 relative p-2 
+                ${showPanel ? "block" : "hidden"}
+            `}>
+                <div className="flex justify-between">
                     <button 
-                        className="m-2 w-10 h-10 rounded-lg transition-colors hover:bg-slate-100/10"
-                        onClick={() => setShowPanel(!showPanel)}
+                        onClick={() => {
+                            setEditing(prev => !prev);
+                            setHistory(history.map(h => {
+                                return h.selected ? {...h, selected: false} : h;
+                            }));
+                        }}
+                        className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-slate-100/10"
                     >
-                        Ⓧ
+                        { editing ? "Done" : "Edit" }
                     </button>
+                    { editing ? 
+                        <button 
+                            onClick={deleteEntries} 
+                            className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-slate-100/10"
+                        >
+                            { count === 0 ? "Clear All" : `Delete (${count})`}
+                        </button>
+                        :
+                        <CircleX
+                            size={32}
+                            onClick={() => setShowPanel(!showPanel)}
+                            className="m-2 p-2 rounded-lg transition-colors hover:bg-slate-100/10"
+                        />
+                    }
                 </div>
+                <ul className="mt-2 flex flex-col">
+                    { history.map((entry, index) => {
+                        return (
+                            <li 
+                                key={index}
+                                onClick={() => editing ? selectEntries(entry) : setResult(entry.ans)}
+                                className={`
+                                    flex align-baseline justify-between px-2 py-1 
+                                    border-b last:border-b-0 border-slate-800 rounded-lg 
+                                    transition-colors hover:bg-slate-100/10 
+                                    ${editing && entry.selected && "bg-slate-100/10"}
+                                `}
+                            >
+                                { editing && (entry.selected ? 
+                                    <CircleCheck size={20} className="my-auto"/> 
+                                    : 
+                                    <Circle size={20} className="my-auto" />
+                                )}
+                                <div className="text-right w-full">
+                                    <p className="text-sm text-slate-500">{entry.eq}</p>
+                                    <p className="text-xl">{entry.ans}</p>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
             </div>
 
             {/* Main Panel containing calculator */}
