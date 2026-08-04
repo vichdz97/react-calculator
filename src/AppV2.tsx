@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Circle, CircleCheck, CircleX, Clock9 } from "lucide-react";
+import { Circle, CircleCheck, CircleX, Clock9, Tag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Entry {
     eq: string;
@@ -8,16 +9,20 @@ interface Entry {
 }
 
 function AppV2() {
+    const navigate = useNavigate();
+
     const [showPanel, setShowPanel] = useState<boolean>(false);
     const [editing, setEditing] = useState<boolean>(false);
     const [result, setResult] = useState<string>('');
     const [history, setHistory] = useState<Entry[]>([]);
     const [count, setCount] = useState<number>(0);
+    const [version, setVersion] = useState<string>('v2');
+    const [showVersion, setShowVersion] = useState<boolean>(false);
 
     const valuesArray: string[] = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.'];
     const operationsArray: string[] = ['÷', '×', '-', '+', '='];
     const miscArray: string[] = ['AC', '+/-', '%'];
-    const miscKeys: string[] = ['c', 'C', 'h', 'H', 'Backspace', '/', '*', 'Enter'];
+    const miscKeys: string[] = ['c', 'C', 'h', 'H', 'v', 'V', 'Backspace', '/', '*', 'Enter'];
     const operators: string[] = ['/', '*', '-', '+'];
     const LAST_ENTRY: string = result.slice(-1);
 
@@ -34,6 +39,17 @@ function AppV2() {
         const selectedEntries = history.filter(entry => entry.selected);
         setCount(selectedEntries.length);
     }, [history]);
+
+    useEffect(() => {
+        if (version === 'v1') {
+            navigate('/v1');
+            import('bootstrap/dist/css/bootstrap.css');
+        }
+        else {
+            navigate('/v2');
+            import('./index.css');
+        }
+    }, [version]);
 
     const deleteLastChar = (): void => setResult(prev => prev.slice(0, -1));
 
@@ -117,7 +133,14 @@ function AppV2() {
             case 'c': setResult(''); break;
             case 'H':
             case 'h': 
+                setShowVersion(false);
                 setShowPanel(prev => !prev); 
+                setEditing(false);
+                break;
+            case 'V': 
+            case 'v': 
+                setShowVersion(prev => !prev);
+                setShowPanel(false); 
                 setEditing(false);
                 break;
             case '+/-': break;
@@ -151,21 +174,43 @@ function AppV2() {
     
     return (
         <div className="min-h-screen flex bg-slate-950">
-            {/* Hide/Show side panel displaying calculation history */}
-            <Clock9 
-                size={32}
-                className={`
-                    m-2 p-2 rounded-lg text-slate-100 
-                    absolute top-0 left-0 
-                    transition-colors hover:bg-slate-100/10 
-                    ${showPanel ? "hidden" : "block"}
-                `}
-                onClick={() => setShowPanel(!showPanel)}
-            />
+            <div className={`flex flex-col gap-1 absolute top-0 left-0 m-2 text-slate-100
+                ${showPanel ? "hidden" : "block"}
+            `}>
+                {/* Hide/Show side panel displaying calculation history */}
+                <Clock9 
+                    size={32}
+                    className="p-2 rounded-lg transition-colors hover:bg-slate-100/10"
+                    onClick={() => {
+                        setShowPanel(!showPanel);
+                        setShowVersion(false);
+                    }}
+                />
+                {/* Select App Version */}
+                <div className="flex gap-1">
+                    <label htmlFor="versions">
+                        <Tag 
+                            size={32} 
+                            className="p-2 rounded-lg transition-colors hover:bg-slate-100/10"
+                            onClick={() => setShowVersion(!showVersion)}
+                        />
+                    </label>
+                    <select 
+                        id="versions" 
+                        name="versions" 
+                        value={version} 
+                        className={showVersion ? "block" : "hidden"} 
+                        onChange={(e) => setVersion(e.target.value)}
+                    >
+                        <option value="v1" disabled={version === 'v1'}>v1.0</option>
+                        <option value="v2" disabled={version === 'v2'}>v2.0</option>
+                    </select>
+                </div>
+            </div>
 
             {/* Side Panel */}
             <div className={`
-                bg-slate-900 w-1/3 text-slate-100 relative p-2 
+                max-h-screen overflow-y-auto w-1/3 relative p-2 bg-slate-900 text-slate-100
                 ${showPanel ? "block" : "hidden"}
             `}>
                 <div className="flex justify-between">
@@ -176,14 +221,14 @@ function AppV2() {
                                 return h.selected ? {...h, selected: false} : h;
                             }));
                         }}
-                        className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-slate-100/10"
+                        className="text-sm px-3 py-1 rounded rounded-lg transition-colors hover:bg-slate-100/10"
                     >
                         { editing ? "Done" : "Edit" }
                     </button>
                     { editing ? 
                         <button 
                             onClick={deleteEntries} 
-                            className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-slate-100/10"
+                            className="text-sm px-3 py-1 rounded rounded-lg transition-colors hover:bg-slate-100/10"
                         >
                             { count === 0 ? "Clear All" : `Delete (${count})`}
                         </button>
@@ -228,7 +273,7 @@ function AppV2() {
                 {/* Calculator Container */}
                 <div className="h-full flex flex-col gap-4 items-center justify-center">
                     <h1 className="text-4xl font-bold">React Calculator</h1>
-                    <div className="w-100 bg-slate-500 w-3/4 h-3/4 flex flex-col gap-4 rounded-xl p-4">
+                    <div className="max-w-100 bg-slate-500 w-3/4 h-3/4 flex flex-col gap-4 rounded-xl p-4">
                         <div className="relative h-20 p-4 text-4xl bg-slate-800 rounded overflow-hidden">
                             <span id="result" className="absolute right-0 mx-4">{result || 0}</span>
                         </div>
